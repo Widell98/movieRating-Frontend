@@ -6,9 +6,10 @@ import MoviePicture from './Pictures/movie-theater.png';
 function App() {
   return (
     <div className="App">      
-      <Title/>
+        
+      <Title/>     
      <Dashboard/>
-      {/* <img src={MoviePicture}></img> */}
+
     </div>
   );
 }
