@@ -1,6 +1,7 @@
 import { useState, useEffect, Fragment } from 'react'
 import axios from 'axios'
 
+
 const Dashboard = () => {
 
   const [movies, setMovies] = useState([]);
@@ -17,6 +18,20 @@ const Dashboard = () => {
   setNewMovie({ ...newMovie, [name]: value });
 };
 
+useEffect(() => {
+  function handleOutsideClick(event) {
+    if (selectedMovie && !event.target.closest(".Edit-Movie")) {
+      setSelectedMovie(null);
+    }
+  }
+
+  document.addEventListener("mousedown", handleOutsideClick);
+
+  return () => {
+    document.removeEventListener("mousedown", handleOutsideClick);
+  };
+}, [selectedMovie]);
+
   useEffect(() => {
     axios.get('https://localhost:7157/Movies')
       .then((response) => {
@@ -28,22 +43,27 @@ const Dashboard = () => {
         console.log(error);
       });
   }, []);
-
   const handleEdit = (movie) => {
     setSelectedMovie(movie);
-    console.log(selectedMovie);
   };
 
   const handleUpdate = (id) => {
-    axios.put(`https://localhost:7157/Movie/Edit?id=${id}`, selectedMovie)
+    axios
+      .put(`https://localhost:7157/Movie/Edit?id=${id}`, selectedMovie)
       .then((response) => {
-        const updatedMovies = movies.map((movie) => movie.id === selectedMovie.id ? selectedMovie : movie);
+        const updatedMovies = movies.map(movie => {
+          if (movie.id === id) {
+            return response.data;
+          }
+          return movie;
+        });
         setMovies(updatedMovies);
         setSelectedMovie(null);
+        window.location.reload(); 
       })
       .catch((error) => {
         console.log(error);
-      }); 
+      });
   };
 
   const handleDelete = (id) => {
@@ -71,8 +91,10 @@ const Dashboard = () => {
 
   return (
     <Fragment>
+      <div class="form-container">   
+      <h1 className="form-title"> Movies </h1>    
           <form>
-            <div>
+            <div className="addmovie">
               <label htmlFor="rating">Rating:</label>
               <input
                 type="text"
@@ -106,18 +128,22 @@ const Dashboard = () => {
               Add Movie
             </button>
           </form>
+          </div>
       <hr className="line"></hr>
-      <div className="Movie-Container">
+      
+      <section class="sub-section-alternative">
+      <div class="Movie-Container">
         {movies.map((movie) => (
-          <div id={movie.id} key={movie.id} className="Mapped-Movies">
+          <div id={movie.id} key={movie.id} class="Mapped-Movies">
             <h1>{movie.title}</h1>
-            <p>{movie.comment}</p>
-            <p>{movie.rating}</p>
+            <p className="subtext">{movie.comment}</p>
+            <p className="subtext">{movie.rating}</p>
             <button onClick={() => handleEdit(movie)}>Edit</button>
             <button onClick={() => handleDelete(movie.id)}>Delete</button>
           </div>
         ))}
       </div>
+      </section>
       {selectedMovie && (
         <div className="Edit-Movie">
           <h2>Edit Movie</h2>
